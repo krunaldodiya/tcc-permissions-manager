@@ -52,10 +52,21 @@ app.on('window-all-closed', () => {
   }
 });
 
+// Helper function to get resource path (works in both dev and production)
+function getResourcePath(filename) {
+  if (app.isPackaged) {
+    // In production, extraResources are in Resources folder
+    return path.join(process.resourcesPath, filename);
+  } else {
+    // In development, files are in project root
+    return path.join(__dirname, filename);
+  }
+}
+
 // Handle IPC call to get installed apps
 ipcMain.handle('get-installed-apps', async () => {
   return new Promise((resolve, reject) => {
-    const scriptPath = path.join(__dirname, 'list_installed_apps.sh');
+    const scriptPath = getResourcePath('list_installed_apps.sh');
     exec(`bash "${scriptPath}"`, (error, stdout, stderr) => {
       if (error) {
         reject(error);
@@ -73,7 +84,7 @@ ipcMain.handle('get-installed-apps', async () => {
 // Handle IPC call to check permissions for an app
 ipcMain.handle('check-app-permissions', async (event, appPath) => {
   return new Promise((resolve, reject) => {
-    const scriptPath = path.join(__dirname, 'check_permissions.sh');
+    const scriptPath = getResourcePath('check_permissions.sh');
     exec(`bash "${scriptPath}" "${appPath}"`, (error, stdout, stderr) => {
       if (error) {
         // If error, return default permissions (both false)
@@ -93,7 +104,7 @@ ipcMain.handle('check-app-permissions', async (event, appPath) => {
 // Handle IPC call to get bundle ID
 ipcMain.handle('get-bundle-id', async (event, appPath) => {
   return new Promise((resolve, reject) => {
-    const scriptPath = path.join(__dirname, 'get_bundle_id.sh');
+    const scriptPath = getResourcePath('get_bundle_id.sh');
     exec(`bash "${scriptPath}" "${appPath}"`, (error, stdout, stderr) => {
       if (error) {
         resolve('');
@@ -107,14 +118,14 @@ ipcMain.handle('get-bundle-id', async (event, appPath) => {
 // Handle IPC call to grant/revoke camera permission
 ipcMain.handle('toggle-camera-permission', async (event, appPath, grant) => {
   return new Promise((resolve, reject) => {
-    const bundleIdScript = path.join(__dirname, 'get_bundle_id.sh');
+    const bundleIdScript = getResourcePath('get_bundle_id.sh');
     exec(`bash "${bundleIdScript}" "${appPath}"`, (error, stdout, stderr) => {
       if (error || !stdout.trim()) {
         reject(new Error('Could not get bundle ID'));
         return;
       }
       const bundleId = stdout.trim();
-      const tccplusPath = path.join(__dirname, 'bin', 'tccplus');
+      const tccplusPath = getResourcePath('bin/tccplus');
       const action = grant ? 'add' : 'reset';
       exec(`"${tccplusPath}" ${action} Camera "${bundleId}"`, (error, stdout, stderr) => {
         if (error) {
@@ -130,14 +141,14 @@ ipcMain.handle('toggle-camera-permission', async (event, appPath, grant) => {
 // Handle IPC call to grant/revoke microphone permission
 ipcMain.handle('toggle-microphone-permission', async (event, appPath, grant) => {
   return new Promise((resolve, reject) => {
-    const bundleIdScript = path.join(__dirname, 'get_bundle_id.sh');
+    const bundleIdScript = getResourcePath('get_bundle_id.sh');
     exec(`bash "${bundleIdScript}" "${appPath}"`, (error, stdout, stderr) => {
       if (error || !stdout.trim()) {
         reject(new Error('Could not get bundle ID'));
         return;
       }
       const bundleId = stdout.trim();
-      const tccplusPath = path.join(__dirname, 'bin', 'tccplus');
+      const tccplusPath = getResourcePath('bin/tccplus');
       const action = grant ? 'add' : 'reset';
       exec(`"${tccplusPath}" ${action} Microphone "${bundleId}"`, (error, stdout, stderr) => {
         if (error) {

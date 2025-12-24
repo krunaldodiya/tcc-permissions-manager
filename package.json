@@ -29,11 +29,42 @@
     "productName": "macOS TCC Plus",
     "mac": {
       "category": "public.app-category.utilities",
-      "target": "dmg"
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        }
+      ],
+      "icon": "icon.icns"
     },
+    "asar": true,
     "files": [
       "**/*",
-      "!node_modules/**/*"
+      "!node_modules/**/*",
+      "!**/node_modules/**/*",
+      "!*.md",
+      "!.git/**/*",
+      "!dist/**/*",
+      "bin/**/*",
+      "*.sh"
+    ],
+    "extraResources": [
+      {
+        "from": "bin/tccplus",
+        "to": "bin/tccplus"
+      },
+      {
+        "from": "list_installed_apps.sh",
+        "to": "list_installed_apps.sh"
+      },
+      {
+        "from": "check_permissions.sh",
+        "to": "check_permissions.sh"
+      },
+      {
+        "from": "get_bundle_id.sh",
+        "to": "get_bundle_id.sh"
+      }
     ]
   }
 }
