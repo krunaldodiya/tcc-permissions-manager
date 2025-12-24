@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>macOS TCC Plus - Installed Apps</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      height: 100vh;
+      overflow: hidden;
+      -webkit-app-region: drag;
+    }
+
+    .container {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      padding-top: 40px;
+    }
+
+    .header {
+      text-align: center;
+      color: white;
+      margin-bottom: 20px;
+      -webkit-app-region: no-drag;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .header p {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      -webkit-app-region: no-drag;
+    }
+
+    button {
+      padding: 10px 20px;
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 8px;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    button:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    .loading {
+      text-align: center;
+      color: white;
+      font-size: 16px;
+      margin: 20px 0;
+    }
+
+    .app-list-container {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 12px;
+      padding: 20px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      -webkit-app-region: no-drag;
+      min-width: 0;
+    }
+
+    .app-list-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #e0e0e0;
+    }
+
+    .app-count {
+      font-size: 16px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .search-box {
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+      width: 250px;
+    }
+
+    .app-list {
+      overflow-y: auto;
+      overflow-x: hidden;
+      flex: 1;
+    }
+
+    .app-item {
+      padding: 12px;
+      margin-bottom: 8px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border-left: 3px solid #667eea;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .app-item:hover {
+      background: #e9ecef;
+      transform: translateX(4px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .app-item-content {
+      flex: 1;
+      min-width: 0;
+      cursor: pointer;
+      overflow: hidden;
+    }
+
+    .app-path {
+      font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+      font-size: 13px;
+      color: #495057;
+      word-break: break-all;
+      overflow-wrap: break-word;
+      overflow: hidden;
+    }
+
+    .app-name {
+      font-size: 15px;
+      font-weight: 500;
+      color: #212529;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    
+    .app-bundle-id {
+      font-size: 12px;
+      color: #999;
+      font-weight: 400;
+      font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+    }
+
+    .app-permissions {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .permission-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .permission-label {
+      font-size: 11px;
+      color: #666;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .permission-checkbox {
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+      accent-color: #667eea;
+      -webkit-app-region: no-drag;
+      transition: opacity 0.2s ease;
+    }
+
+    .permission-checkbox:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .loading-permissions {
+      font-size: 11px;
+      color: #999;
+      font-style: italic;
+    }
+
+    .error {
+      color: #dc3545;
+      text-align: center;
+      padding: 20px;
+      background: rgba(220, 53, 69, 0.1);
+      border-radius: 8px;
+      margin: 20px;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #888;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🎤📷 macOS TCC Plus</h1>
+      <p>Manage microphone and camera access for installed applications</p>
+    </div>
+
+
+    <div id="app-list-container" class="app-list-container" style="display: none;">
+      <div class="app-list-header">
+        <div class="app-count" id="app-count">0 applications</div>
+        <input type="text" class="search-box" id="search-box" placeholder="Search applications..." oninput="filterApps()">
+      </div>
+      <div class="app-list" id="app-list"></div>
+    </div>
+
+    <div id="loading" class="loading">Loading applications...</div>
+    <div id="error" class="error" style="display: none;"></div>
+  </div>
+
+  <script>
+    const { ipcRenderer } = require('electron');
+    let allApps = [];
+    let isUpdatingPermissions = false; // Flag to prevent loops during permission updates
+
+    async function reloadAllApps() {
+      // Reload all apps and their permissions
+      // This ensures we get the latest permission state from the TCC database
+      const apps = await ipcRenderer.invoke('get-installed-apps');
+      allApps = apps;
+      
+      // Preserve search filter if active
+      const searchBox = document.getElementById('search-box');
+      const searchTerm = searchBox ? searchBox.value.toLowerCase() : '';
+      
+      if (searchTerm) {
+        const filtered = apps.filter(app => app.toLowerCase().includes(searchTerm));
+        await displayApps(filtered);
+      } else {
+        await displayApps(apps);
+      }
+    }
+
+    async function loadApps() {
+      const loadingEl = document.getElementById('loading');
+      const errorEl = document.getElementById('error');
+      const containerEl = document.getElementById('app-list-container');
+      const appListEl = document.getElementById('app-list');
+
+      loadingEl.style.display = 'block';
+      errorEl.style.display = 'none';
+      containerEl.style.display = 'none';
+
+      try {
+        // Use IPC to get apps from main process
+        const apps = await ipcRenderer.invoke('get-installed-apps');
+        allApps = apps;
+        displayApps(apps);
+        loadingEl.style.display = 'none';
+        containerEl.style.display = 'flex';
+      } catch (error) {
+        loadingEl.style.display = 'none';
+        errorEl.style.display = 'block';
+        errorEl.textContent = `Error loading apps: ${error.message}`;
+      }
+    }
+
+    async function displayApps(apps) {
+      const appListEl = document.getElementById('app-list');
+      const appCountEl = document.getElementById('app-count');
+      
+      appCountEl.textContent = `${apps.length} application${apps.length !== 1 ? 's' : ''}`;
+      appListEl.innerHTML = '';
+
+      // Create app items
+      const appItems = apps.map(appPath => {
+        const appName = appPath.split('/').pop().replace('.app', '');
+        const appItem = document.createElement('div');
+        appItem.className = 'app-item';
+        appItem.dataset.appPath = appPath;
+        
+        const itemId = `app-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        appItem.id = itemId;
+        
+        // Bundle ID will be loaded asynchronously
+        appItem.innerHTML = `
+          <div class="app-item-content">
+            <div class="app-name">
+              <span>${escapeHtml(appName)}</span>
+              <span class="app-bundle-id" data-bundle-id-placeholder="${escapeHtml(appPath)}">- loading...</span>
+            </div>
+            <div class="app-path">${escapeHtml(appPath)}</div>
+          </div>
+          <div class="app-permissions">
+            <div class="permission-group">
+              <label class="permission-label">🎤 Microphone</label>
+              <input type="checkbox" 
+                     class="permission-checkbox" 
+                     data-permission="microphone"
+                     disabled>
+              <div class="loading-permissions" style="display: none;">Loading...</div>
+            </div>
+            <div class="permission-group">
+              <label class="permission-label">📷 Camera</label>
+              <input type="checkbox" 
+                     class="permission-checkbox" 
+                     data-permission="camera"
+                     disabled>
+              <div class="loading-permissions" style="display: none;">Loading...</div>
+            </div>
+          </div>
+        `;
+        return { appItem, appPath };
+      });
+
+      // Add items to DOM
+      appItems.forEach(({ appItem }) => {
+        appListEl.appendChild(appItem);
+      });
+
+      // Set up event listeners
+      setupEventListeners();
+
+      // Load bundle IDs for all apps
+      await loadBundleIdsForApps(apps);
+
+      // Load permissions for all apps
+      await loadPermissionsForApps(apps);
+    }
+
+    async function loadBundleIdsForApps(apps) {
+      const promises = apps.map(async (appPath) => {
+        try {
+          const bundleId = await ipcRenderer.invoke('get-bundle-id', appPath);
+          if (bundleId) {
+            // Find the app item and update bundle ID
+            const appItems = document.querySelectorAll('.app-item');
+            for (let item of appItems) {
+              if (item.dataset.appPath === appPath) {
+                const bundleIdElement = item.querySelector('[data-bundle-id-placeholder]');
+                if (bundleIdElement) {
+                  bundleIdElement.textContent = `- ${bundleId}`;
+                }
+                break;
+              }
+            }
+          } else {
+            // If no bundle ID found, hide the element
+            const appItems = document.querySelectorAll('.app-item');
+            for (let item of appItems) {
+              if (item.dataset.appPath === appPath) {
+                const bundleIdElement = item.querySelector('[data-bundle-id-placeholder]');
+                if (bundleIdElement) {
+                  bundleIdElement.textContent = '';
+                }
+                break;
+              }
+            }
+          }
+        } catch (error) {
+          console.error(`Error loading bundle ID for ${appPath}:`, error);
+          // Hide bundle ID on error
+          const appItems = document.querySelectorAll('.app-item');
+          for (let item of appItems) {
+            if (item.dataset.appPath === appPath) {
+              const bundleIdElement = item.querySelector('[data-bundle-id-placeholder]');
+              if (bundleIdElement) {
+                bundleIdElement.textContent = '';
+              }
+              break;
+            }
+          }
+        }
+      });
+      await Promise.all(promises);
+    }
+
+    // Use event delegation on document to avoid duplicate listeners
+    if (!window.eventListenersSetup) {
+      // Handle app content clicks (copy path) - use event delegation
+      document.addEventListener('click', (e) => {
+        const content = e.target.closest('.app-item-content');
+        if (content) {
+          const appItem = content.closest('.app-item');
+          if (appItem) {
+            const appPath = appItem.dataset.appPath;
+            if (appPath) {
+              copyAppPath(appPath);
+            }
+          }
+        }
+      });
+
+      // Handle checkbox changes - use event delegation
+      document.addEventListener('change', (e) => {
+        if (e.target.classList.contains('permission-checkbox')) {
+          // Don't trigger if we're currently updating permissions
+          if (isUpdatingPermissions) {
+            return;
+          }
+          
+          const appItem = e.target.closest('.app-item');
+          if (appItem) {
+            const appPath = appItem.dataset.appPath;
+            const permission = e.target.dataset.permission;
+            const granted = e.target.checked;
+            if (appPath && permission) {
+              togglePermission(appPath, permission, granted);
+            }
+          }
+        }
+      });
+      
+      window.eventListenersSetup = true;
+    }
+    
+    function setupEventListeners() {
+      // Event listeners are now set up globally using event delegation
+      // This function is kept for compatibility but doesn't need to do anything
+    }
+
+    async function loadPermissionsForApps(apps) {
+      const promises = apps.map(async (appPath) => {
+        try {
+          const permissions = await ipcRenderer.invoke('check-app-permissions', appPath);
+          updateAppPermissions(appPath, permissions);
+        } catch (error) {
+          console.error(`Error loading permissions for ${appPath}:`, error);
+          updateAppPermissions(appPath, { camera: false, microphone: false });
+        }
+      });
+      await Promise.all(promises);
+    }
+
+    function updateAppPermissions(appPath, permissions) {
+      // Set flag to prevent change events from triggering
+      isUpdatingPermissions = true;
+      
+      // Find app item by exact path match
+      const appItems = document.querySelectorAll('.app-item');
+      let appItem = null;
+      for (let item of appItems) {
+        if (item.dataset.appPath === appPath) {
+          appItem = item;
+          break;
+        }
+      }
+      
+      if (!appItem) {
+        isUpdatingPermissions = false;
+        return;
+      }
+
+      const micCheckbox = appItem.querySelector('[data-permission="microphone"]');
+      const cameraCheckbox = appItem.querySelector('[data-permission="camera"]');
+      const loadingElements = appItem.querySelectorAll('.loading-permissions');
+
+      if (micCheckbox) {
+        micCheckbox.checked = permissions.microphone === true || permissions.microphone === 1 || permissions.microphone === "1";
+        micCheckbox.disabled = false;
+      }
+      if (cameraCheckbox) {
+        cameraCheckbox.checked = permissions.camera === true || permissions.camera === 1 || permissions.camera === "1";
+        cameraCheckbox.disabled = false;
+      }
+      loadingElements.forEach(el => el.style.display = 'none');
+      
+      // Reset flag after a short delay
+      setTimeout(() => {
+        isUpdatingPermissions = false;
+      }, 100);
+    }
+
+    async function togglePermission(appPath, permission, grant) {
+      // Prevent multiple simultaneous toggles
+      if (isUpdatingPermissions) {
+        return;
+      }
+      
+      isUpdatingPermissions = true;
+      
+      // Find app item by exact path match
+      const appItems = document.querySelectorAll('.app-item');
+      let appItem = null;
+      for (let item of appItems) {
+        if (item.dataset.appPath === appPath) {
+          appItem = item;
+          break;
+        }
+      }
+      
+      if (!appItem) {
+        isUpdatingPermissions = false;
+        return;
+      }
+
+      const checkbox = appItem.querySelector(`[data-permission="${permission}"]`);
+      if (!checkbox) {
+        isUpdatingPermissions = false;
+        return;
+      }
+
+      // Show confirmation dialog for both granting and revoking permissions
+      const appName = appPath.split('/').pop().replace('.app', '');
+      const permissionName = permission === 'microphone' ? 'microphone' : 'camera';
+      
+      let confirmed = false;
+      if (grant) {
+        confirmed = confirm(
+          `Are you sure you want to grant ${permissionName} access to "${appName}"?\n\n` +
+          `This will allow the app to access your ${permissionName}.`
+        );
+      } else {
+        confirmed = confirm(
+          `Are you sure you want to revoke ${permissionName} access from "${appName}"?\n\n` +
+          `This will remove the permission and the app will need to request access again.`
+        );
+      }
+      
+      if (!confirmed) {
+        // User cancelled, revert checkbox to original state
+        checkbox.checked = !grant;
+        isUpdatingPermissions = false;
+        return;
+      }
+
+      checkbox.disabled = true;
+
+      try {
+        if (permission === 'microphone') {
+          await ipcRenderer.invoke('toggle-microphone-permission', appPath, grant);
+        } else if (permission === 'camera') {
+          await ipcRenderer.invoke('toggle-camera-permission', appPath, grant);
+        }
+        
+        // Wait a moment for TCC database to update
+        await new Promise(resolve => setTimeout(resolve, 200));
+        
+        // Only refresh permissions for this specific app instead of reloading everything
+        // This prevents flickering while still ensuring accurate state
+        let retries = 2;
+        let success = false;
+        while (retries > 0 && !success) {
+          try {
+            const permissions = await ipcRenderer.invoke('check-app-permissions', appPath);
+            const expectedValue = grant ? 1 : 0;
+            const actualValue = permission === 'microphone' ? permissions.microphone : permissions.camera;
+            
+            // Update the permissions
+            updateAppPermissions(appPath, permissions);
+            
+            // If we got the expected value, we're done
+            if (actualValue == expectedValue) {
+              success = true;
+            } else {
+              // Wait a bit more and retry
+              await new Promise(resolve => setTimeout(resolve, 200));
+            }
+          } catch (error) {
+            console.error('Error refreshing permissions:', error);
+          }
+          retries--;
+        }
+        
+        // If we still didn't get the right value, do a full reload as fallback
+        if (!success) {
+          await reloadAllApps();
+        }
+        
+        isUpdatingPermissions = false;
+      } catch (error) {
+        console.error(`Error toggling ${permission} permission:`, error);
+        checkbox.disabled = false;
+        isUpdatingPermissions = false;
+        alert(`Failed to ${grant ? 'grant' : 'revoke'} ${permission} permission. Error: ${error.message}`);
+        // Only reload if there was an error to restore correct state
+        try {
+          const permissions = await ipcRenderer.invoke('check-app-permissions', appPath);
+          updateAppPermissions(appPath, permissions);
+        } catch (refreshError) {
+          // Fallback to full reload only if single app refresh fails
+          await reloadAllApps();
+        }
+      }
+    }
+
+    function copyAppPath(appPath) {
+      navigator.clipboard.writeText(appPath).then(() => {
+        // Find app item by exact path match
+        const appItems = document.querySelectorAll('.app-item');
+        let appItem = null;
+        for (let item of appItems) {
+          if (item.dataset.appPath === appPath) {
+            appItem = item;
+            break;
+          }
+        }
+        
+        if (appItem) {
+          const content = appItem.querySelector('.app-item-content');
+          if (content) {
+            content.style.background = '#d4edda';
+            setTimeout(() => {
+              content.style.background = '';
+            }, 500);
+          }
+        }
+      });
+    }
+
+    async function filterApps() {
+      const searchTerm = document.getElementById('search-box').value.toLowerCase();
+      const filtered = allApps.filter(app => 
+        app.toLowerCase().includes(searchTerm)
+      );
+      await displayApps(filtered);
+    }
+
+    function copyAll() {
+      const text = allApps.join('\n');
+      navigator.clipboard.writeText(text).then(() => {
+        alert(`Copied ${allApps.length} app paths to clipboard!`);
+      });
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Load apps on startup
+    loadApps();
+  </script>
+</body>
+</html>
+
