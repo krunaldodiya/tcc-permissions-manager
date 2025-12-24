@@ -1,98 +1,160 @@
-# macOS TCC Plus - Desktop App
+# macOS TCC Plus
 
-A beautiful macOS desktop application built with Electron to manage microphone and camera access permissions for installed applications.
+A beautiful macOS desktop application to manage microphone and camera access permissions for installed applications. Easily view and control which apps have access to your microphone and camera.
+
+![macOS TCC Plus Screenshot](screenshots/image.png)
 
 ## Features
 
-- 🎨 Modern, beautiful UI with gradient design
-- 📱 Lists all installed applications from `/Applications` and `~/Applications`
-- 🎤 **Microphone Permission Management** - View and toggle microphone access for any app
-- 📷 **Camera Permission Management** - View and toggle camera access for any app
-- ✅ **Visual Permission Status** - Checkboxes show current permission state
-- 🔍 Real-time search/filter functionality
-- 📋 Copy individual app paths or all apps at once
-- ⚡ Fast and responsive
-- 🖱️ Click any app name to copy its path to clipboard
+- 🎨 **Modern UI** - Beautiful gradient design with smooth animations
+- 📱 **Complete App List** - Lists all installed applications from `/Applications` and `~/Applications`
+- 🎤 **Microphone Management** - View and toggle microphone access for any app
+- 📷 **Camera Management** - View and toggle camera access for any app
+- ✅ **Visual Status** - Checkboxes clearly show current permission state
+- 🔍 **Search & Filter** - Quickly find apps with real-time search
+- 📋 **Bundle ID Display** - See app bundle IDs for technical reference
+- ⚡ **Fast & Responsive** - Instant permission updates
 
 ## Requirements
 
 - macOS 10.13 or later
-- Node.js 16.x or later
-- npm or yarn
+- Full Disk Access permission (required to read TCC database)
 
-## Installation
+## Download & Installation
 
-1. Install dependencies:
-```bash
-npm install
-```
+### Latest Release: v0.0.1
 
-## Running the App
+Download the appropriate version for your Mac:
 
-### Development Mode
-```bash
-npm start
-```
+- **Apple Silicon (M1/M2/M3)**: [macOS TCC Plus-1.0.0-arm64.dmg](https://github.com/yourusername/macos-tccplus/releases/download/v0.0.1/macOS-TCC-Plus-1.0.0-arm64.dmg)
+- **Intel (x86_64)**: [macOS TCC Plus-1.0.0.dmg](https://github.com/yourusername/macos-tccplus/releases/download/v0.0.1/macOS-TCC-Plus-1.0.0.dmg)
 
-Or with DevTools open:
-```bash
-npm run dev
-```
+### Installation Steps
 
-### Building for Distribution
-```bash
-npm run build
-```
+1. **Download the DMG file** for your Mac architecture (see links above)
 
-This will create a `.dmg` file in the `dist` folder that you can distribute.
+2. **Open the DMG file** by double-clicking it
 
-## Project Structure
+3. **Drag the app** to your Applications folder
 
-- `main.js` - Electron main process (handles app lifecycle and IPC)
-- `index.html` - Main UI with embedded CSS and JavaScript
-- `list_installed_apps.sh` - Shell script that finds installed apps
-- `check_permissions.sh` - Script to check TCC permissions for an app
-- `get_bundle_id.sh` - Script to extract bundle ID from app path
-- `bin/tccplus` - Binary tool for managing TCC permissions
-- `package.json` - Project configuration and dependencies
+4. **First Launch**:
+   - If you see a security warning, right-click the app and select **Open**
+   - Or go to **System Settings → Privacy & Security** and click **Open Anyway**
+
+5. **Grant Full Disk Access** (Required):
+   - Open **System Settings → Privacy & Security → Full Disk Access**
+   - Click the **+** button and add **macOS TCC Plus**
+   - Check the box next to the app
+   - Restart the app if it's running
+
+6. **You're ready!** The app will now show all installed applications and their permission status.
+
+## How to Use
+
+### Viewing Permissions
+
+1. Launch **macOS TCC Plus** from your Applications folder
+2. Browse the list of installed applications
+3. Check the checkboxes on the right:
+   - 🎤 **Microphone** - Shows if the app has microphone access
+   - 📷 **Camera** - Shows if the app has camera access
+
+### Granting Permissions
+
+1. Find the app you want to grant permissions to
+2. Click the checkbox for **Microphone** or **Camera**
+3. Confirm the dialog
+4. The permission will be granted immediately
+
+### Revoking Permissions
+
+1. Find the app with the permission you want to revoke
+2. Uncheck the **Microphone** or **Camera** checkbox
+3. Confirm the dialog
+4. The permission will be revoked immediately
+
+### Searching Apps
+
+- Use the search box at the top to filter apps by name or path
+- Search is case-insensitive and works in real-time
+
+### Copying App Path
+
+- Click on any app name or path to copy it to your clipboard
+- Useful for technical reference or troubleshooting
 
 ## Important Notes
 
-⚠️ **System Permissions Required**: 
-- The app needs Full Disk Access to read the TCC database
-- Granting/revoking permissions requires appropriate system privileges
-- Some system apps may not appear in the list
+### System Permissions
 
-🔒 **Security**: 
+⚠️ **Full Disk Access Required**: 
+- The app needs Full Disk Access to read the TCC (Transparency, Consent, and Control) database
+- Without this permission, the app cannot check or modify permissions
+- This is a macOS security requirement
+
+### Security
+
+🔒 **Use with Caution**: 
 - Modifying TCC permissions affects system security
 - Only grant permissions to trusted applications
-- The app uses `tccplus` to modify permissions programmatically
+- Revoking permissions may break app functionality that requires camera/microphone access
+
+### Compatibility
+
+- Works on macOS 10.13 (High Sierra) and later
+- Supports both Intel (x86_64) and Apple Silicon (arm64) Macs
+- Some system apps may not appear in the list (by design)
+
+## Troubleshooting
+
+### App won't show permissions
+
+- **Solution**: Make sure you've granted Full Disk Access in System Settings
+
+### Permission changes not taking effect
+
+- **Solution**: Wait a few seconds and refresh the app, or restart the target application
+
+### App shows "loading..." indefinitely
+
+- **Solution**: Check that Full Disk Access is granted and restart the app
+
+### Can't find an app
+
+- Some system apps are hidden by design
+- Try searching for the app name
+- Check both `/Applications` and `~/Applications` folders manually
 
 ## How It Works
 
-1. The Electron main process (`main.js`) handles IPC communication
-2. When the app loads, it calls the shell script `list_installed_apps.sh` to find all installed apps
-3. For each app, it checks TCC (Transparency, Consent, and Control) permissions using `check_permissions.sh`
-4. Results are displayed in a searchable, scrollable list with checkboxes for camera and microphone
-5. Users can toggle permissions by clicking the checkboxes, which uses `tccplus` to grant/revoke access
-6. The app queries the TCC database to show current permission status
+macOS TCC Plus uses the macOS TCC (Transparency, Consent, and Control) system to:
 
-## Permission Management
+1. **Read the TCC database** to check current permissions
+2. **Query installed applications** from system directories
+3. **Use tccplus** to programmatically grant or revoke permissions
+4. **Display real-time status** with visual checkboxes
 
-- **Checkboxes**: Each app has two checkboxes on the right side:
-  - 🎤 Microphone - Shows and controls microphone access
-  - 📷 Camera - Shows and controls camera access
-- **Checked** = Permission granted
-- **Unchecked** = Permission not granted
-- Click a checkbox to toggle the permission (requires appropriate system permissions)
+The app provides a user-friendly interface for managing permissions that would otherwise require terminal commands or System Settings navigation.
 
-## Technologies Used
+## Privacy
 
-- **Electron** - Cross-platform desktop app framework
-- **HTML/CSS/JavaScript** - Frontend (no React needed for this simple app)
-- **Bash** - Shell script for finding apps
+- The app only reads TCC permission data
+- No data is sent to external servers
+- All operations are performed locally on your Mac
+- Source code is available for review
 
 ## License
 
-MIT
+MIT License - Feel free to use, modify, and distribute
 
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## Support
+
+For issues, questions, or feature requests, please open an issue on GitHub.
+
+---
+
+**Made with ❤️ for macOS users**
